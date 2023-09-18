@@ -7,7 +7,10 @@ import {
   postUser,
   removeUser,
   checkEmail,
+  makeConversation,
+  getConversation,
 } from "../queries/UserQuery.js";
+import e from "express";
 
 const salt = 10;
 
@@ -185,3 +188,46 @@ export const cancelVerifiedUser = (req, res) => {
     }
   });
 };
+
+export const createMessage = (req, res) => {
+  const { id } = req.user;
+  const { sent_user_id } = req.body;
+  const { message } = req.body;
+
+  pool.query(getUserById1, [id], (error, results) => {
+    if (error) {
+      res.status(500).send("Internal server error.");
+    } else {
+      if (results.rows.length) {
+        pool.query(getConversation, [id, sent_user_id], (error, results) => {
+          if (error) {
+            res.status(500).send("Internal server error.");
+          }
+          if (results.rows.length) {
+            return res.status(200).json({
+              message: "You already created conversation!",
+            });
+          }
+          pool.query(
+            makeConversation,
+            [id, sent_user_id, message],
+            (error, results) => {
+              if (error) {
+                res.status(500).send("There Is Not Including The Defined User");
+              } else {
+                res.status(200).json({
+                  message: "You successfully created conversation!",
+                  results: results.rows,
+                });
+              }
+            }
+          );
+        });
+      } else {
+        res.status(404).send("Not Found User Id!");
+      }
+    }
+  });
+};
+
+export const sendMessage = (req, res) => {};
