@@ -35,9 +35,9 @@ io.on("connection", (socket) => {
 });
 
 app.use("/auth", userRoutes);
+app.use("/", widgetRoutes);
 app.use("/", userProcessRoute);
 app.use("/tweet", tweetRoutes);
-app.use("/", widgetRoutes);
 app.use("/profile", profileRoutes);
 
 server.listen(port, () => console.log(`App running on port ${port}`));

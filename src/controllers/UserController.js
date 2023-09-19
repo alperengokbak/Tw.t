@@ -10,7 +10,6 @@ import {
   makeConversation,
   getConversation,
 } from "../queries/UserQuery.js";
-import e from "express";
 
 const salt = 10;
 
@@ -71,21 +70,6 @@ export const register = (req, res) => {
         return res.status(200).json({ status: "Success" });
       }
     );
-  });
-};
-
-export const getUsers = (req, res) => {
-  pool.query(getUser, (error, results) => {
-    if (error) throw error;
-    res.status(200).json(results.rows);
-  });
-};
-
-export const getUserById = (req, res) => {
-  const id = parseInt(req.params.id);
-  pool.query(getUserById1, [id], (error, results) => {
-    if (error) throw error;
-    res.status(200).json(results.rows);
   });
 };
 
@@ -192,7 +176,6 @@ export const cancelVerifiedUser = (req, res) => {
 export const createMessage = (req, res) => {
   const { id } = req.user;
   const { sent_user_id } = req.body;
-  const { message } = req.body;
 
   pool.query(getUserById1, [id], (error, results) => {
     if (error) {
@@ -208,25 +191,29 @@ export const createMessage = (req, res) => {
               message: "You already created conversation!",
             });
           }
-          pool.query(
-            makeConversation,
-            [id, sent_user_id, message],
-            (error, results) => {
-              if (error) {
-                res.status(500).send("There Is Not Including The Defined User");
-              } else {
-                res.status(200).json({
-                  message: "You successfully created conversation!",
-                  results: results.rows,
-                });
-              }
+          pool.query(makeConversation, [id, sent_user_id], (error, results) => {
+            if (error) {
+              res.status(500).send("There Is Not Including The Defined User");
+            } else {
+              res.status(200).json({
+                message: "You successfully created conversation!",
+                results: results.rows,
+              });
             }
-          );
+          });
         });
       } else {
         res.status(404).send("Not Found User Id!");
       }
     }
+  });
+};
+
+export const usersMessageTabs = (req, res) => {
+  const { firstname } = req.query;
+  pool.query(getUser, ["%" + firstname + "%"], (error, results) => {
+    if (error) throw error;
+    res.status(200).json(results.rows);
   });
 };
 
