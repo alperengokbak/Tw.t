@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@cloudinary/url-gen": "^1.11.1",
+    "@ngneat/falso": "^7.1.1",
     "bcrypt": "^5.1.0",
     "cloudinary": "^1.40.0",
     "cookie-parser": "^1.4.6",

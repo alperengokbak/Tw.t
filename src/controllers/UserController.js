@@ -17,36 +17,28 @@ export const login = (req, res) => {
   pool.query(checkEmail, [req.body.email], (error, results) => {
     if (error) return res.status(501).json("Internal Server Error!");
     if (results.rows.length) {
-      bcrypt.compare(
-        req.body.password,
-        results.rows[0].password,
-        (err, response) => {
-          if (err) return res.json({ Error: "Error for comparing password" });
-          if (response) {
-            const token = jwt.sign(
-              { id: results.rows[0].id },
-              "jwt-secret-key",
-              {
-                expiresIn: "7d",
-              }
-            );
-            return res.json({
-              status: "Success",
-              user: {
-                id: results.rows[0].id,
-                firstName: results.rows[0].firstname,
-                lastName: results.rows[0].lastname,
-                username: results.rows[0].username,
-                email: results.rows[0].email,
-                profile_picture: results.rows[0].profile_picture,
-              },
-              token,
-            });
-          } else {
-            return res.status(401).json({ status: "Wrong password" });
-          }
+      bcrypt.compare(req.body.password, results.rows[0].password, (err, response) => {
+        if (err) return res.json({ Error: "Error for comparing password" });
+        if (response) {
+          const token = jwt.sign({ id: results.rows[0].id }, "jwt-secret-key", {
+            expiresIn: "7d",
+          });
+          return res.json({
+            status: "Success",
+            user: {
+              id: results.rows[0].id,
+              firstName: results.rows[0].firstname,
+              lastName: results.rows[0].lastname,
+              username: results.rows[0].username,
+              email: results.rows[0].email,
+              profile_picture: results.rows[0].profile_picture,
+            },
+            token,
+          });
+        } else {
+          return res.status(401).json({ status: "Wrong password" });
         }
-      );
+      });
     } else {
       return res.status(404).json({ status: "Not found email" });
     }
@@ -56,20 +48,10 @@ export const login = (req, res) => {
 export const register = (req, res) => {
   bcrypt.hash(req.body.password, salt, (err, hash) => {
     if (err) return res.json({ Error: "Error for hashing password" });
-    pool.query(
-      postUser,
-      [
-        req.body.firstName,
-        req.body.lastName,
-        req.body.username,
-        req.body.email,
-        hash,
-      ],
-      (error) => {
-        if (error) throw error;
-        return res.status(200).json({ status: "Success" });
-      }
-    );
+    pool.query(postUser, [req.body.firstName, req.body.lastName, req.body.username, req.body.email, hash], (error) => {
+      if (error) throw error;
+      return res.status(200).json({ status: "Success" });
+    });
   });
 };
 
@@ -124,20 +106,16 @@ export const becomeVerifiedUser = (req, res) => {
       res.status(500).send("Internal server error.");
     } else {
       if (results.rows.length) {
-        pool.query(
-          "UPDATE users SET is_verified = true WHERE id = $1 RETURNING *",
-          [id],
-          (error, results) => {
-            if (error) {
-              res.status(500).send("There Is Not Including The Defined User");
-            } else {
-              res.json({
-                success: results.rows[0].is_verified,
-                message: "You successfully verified your account!",
-              });
-            }
+        pool.query("UPDATE users SET is_verified = true WHERE id = $1 RETURNING *", [id], (error, results) => {
+          if (error) {
+            res.status(500).send("There Is Not Including The Defined User");
+          } else {
+            res.json({
+              success: results.rows[0].is_verified,
+              message: "You successfully verified your account!",
+            });
           }
-        );
+        });
       } else {
         res.status(404).send("Not Found User Id!");
       }
@@ -152,20 +130,16 @@ export const cancelVerifiedUser = (req, res) => {
       res.status(500).send("Internal server error.");
     } else {
       if (results.rows.length) {
-        pool.query(
-          "UPDATE users SET is_verified = false WHERE id = $1 RETURNING *",
-          [id],
-          (error, results) => {
-            if (error) {
-              res.status(500).send("There Is Not Including The Defined User");
-            } else {
-              res.json({
-                success: results.rows[0].is_verified,
-                message: "You successfully canceled your account!",
-              });
-            }
+        pool.query("UPDATE users SET is_verified = false WHERE id = $1 RETURNING *", [id], (error, results) => {
+          if (error) {
+            res.status(500).send("There Is Not Including The Defined User");
+          } else {
+            res.json({
+              success: results.rows[0].is_verified,
+              message: "You successfully canceled your account!",
+            });
           }
-        );
+        });
       } else {
         res.status(404).send("Not Found User Id!");
       }
